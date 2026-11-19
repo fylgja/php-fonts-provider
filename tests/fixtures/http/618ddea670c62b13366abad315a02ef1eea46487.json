@@ -1,0 +1,5 @@
+{
+    "url": "https://fonts.googleapis.com/css2?family=Source+Code+Pro:wght@400;600&display=swap",
+    "status": 200,
+    "body": "@font-face {\n  font-family: 'Source Code Pro';\n  font-style: normal;\n  font-weight: 400;\n  font-display: swap;\n  src: url(https://fonts.gstatic.com/s/sourcecodepro/v32/HI_diYsKILxRpg3hIP6sJ7fM7PqPMcMnZFqUwX28DMyQhM4.ttf) format('truetype');\n}\n@font-face {\n  font-family: 'Source Code Pro';\n  font-style: normal;\n  font-weight: 600;\n  font-display: swap;\n  src: url(https://fonts.gstatic.com/s/sourcecodepro/v32/HI_diYsKILxRpg3hIP6sJ7fM7PqPMcMnZFqUwX28DBKXhM4.ttf) format('truetype');\n}\n"
+}

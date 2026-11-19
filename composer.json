@@ -1,0 +1,65 @@
+{
+    "name": "fylgja/fonts-provider",
+    "description": "Self host web fonts from Fontsource, Google Fonts, Bunny Fonts and Fontshare, with metric adjusted fallbacks.",
+    "type": "library",
+    "license": "MIT",
+    "homepage": "https://fylgja.dev/",
+    "support": {
+        "issues": "https://github.com/fylgja/php-fonts-provider/issues",
+        "source": "https://github.com/fylgja/php-fonts-provider"
+    },
+    "keywords": [
+        "fylgja",
+        "css",
+        "fonts",
+        "webfonts",
+        "font-face",
+        "self-hosted",
+        "fontsource",
+        "google-fonts",
+        "bunny-fonts",
+        "fontshare"
+    ],
+    "authors": [
+        {
+            "name": "Fylgja",
+            "homepage": "https://fylgja.dev/"
+        }
+    ],
+    "require": {
+        "php": ">=8.2",
+        "ext-intl": "*",
+        "ext-zlib": "*",
+        "psr/http-client": "^1.0",
+        "psr/http-factory": "^1.0"
+    },
+    "require-dev": {
+        "guzzlehttp/guzzle": "^7.8 || ^8.0",
+        "phpunit/phpunit": "^10.5 || ^11.0"
+    },
+    "suggest": {
+        "ext-brotli": "Reads font metrics straight from woff2 files, without an extra request for a woff or ttf.",
+        "guzzlehttp/guzzle": "A PSR-18 client and PSR-17 factory."
+    },
+    "autoload": {
+        "psr-4": {
+            "Fylgja\\FontsProvider\\": "src/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "Fylgja\\FontsProvider\\Tests\\": "tests/"
+        }
+    },
+    "scripts": {
+        "test": "phpunit"
+    },
+    "config": {
+        "sort-packages": true
+    },
+    "extra": {
+        "branch-alias": {
+            "dev-main": "1.x-dev"
+        }
+    }
+}

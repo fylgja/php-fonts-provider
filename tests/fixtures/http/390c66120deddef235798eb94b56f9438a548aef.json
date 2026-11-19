@@ -1,0 +1,5 @@
+{
+    "url": "https://api.fontsource.org/v1/fonts/not-a-real-font",
+    "status": 404,
+    "body": "{\"status\":404,\"error\":\"Not Found. Font does not exist.\"}"
+}

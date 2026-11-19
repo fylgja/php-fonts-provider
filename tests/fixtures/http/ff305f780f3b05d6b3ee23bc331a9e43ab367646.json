@@ -1,0 +1,5 @@
+{
+    "url": "https://api.fontsource.org/v1/variable/inter",
+    "status": 200,
+    "body": "{\"family\":\"Inter\",\"axes\":{\"ital\":{\"default\":\"0\",\"min\":\"0\",\"max\":\"1\",\"step\":\"1\"},\"opsz\":{\"default\":\"14\",\"min\":\"14\",\"max\":\"32\",\"step\":\"0.1\"},\"wght\":{\"default\":\"400\",\"min\":\"100\",\"max\":\"900\",\"step\":\"1\"}}}"
+}

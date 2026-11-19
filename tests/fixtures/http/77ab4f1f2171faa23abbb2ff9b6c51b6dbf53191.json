@@ -1,0 +1,5 @@
+{
+    "url": "https://api.fontshare.com/v2/css?f[]=jet-brains-mono@400",
+    "status": 200,
+    "body": "/* JetBrains Mono */\n@font-face {\n  font-family: 'JetBrains Mono';\n  src: url('//cdn.fontshare.com/wf/TZ2PMVPWEVHUPJWOPNSWLOXAF6QPOEMZ/O4OZKA7ZLZGT4JOGT5IEKURK6U3RXYGM/EO5MKE3BUDOZN44BP4HDPXAJAC2BIMCD.woff2') format('woff2'),\n       url('//cdn.fontshare.com/wf/TZ2PMVPWEVHUPJWOPNSWLOXAF6QPOEMZ/O4OZKA7ZLZGT4JOGT5IEKURK6U3RXYGM/EO5MKE3BUDOZN44BP4HDPXAJAC2BIMCD.woff') format('woff'),\n       url('//cdn.fontshare.com/wf/TZ2PMVPWEVHUPJWOPNSWLOXAF6QPOEMZ/O4OZKA7ZLZGT4JOGT5IEKURK6U3RXYGM/EO5MKE3BUDOZN44BP4HDPXAJAC2BIMCD.ttf') format('truetype');\n  font-weight: 400;\n  font-display: swap;\n  font-style: normal;\n}\n\n\n"
+}
