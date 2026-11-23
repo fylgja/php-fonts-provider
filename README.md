@@ -1,5 +1,11 @@
 # Fylgja Fonts Provider
 
+[![Fylgja](https://img.shields.io/endpoint?url=https%3A%2F%2Fraw.githubusercontent.com%2Ffylgja%2F.github%2Frefs%2Fheads%2Fmain%2Fassets%2Fbadge%2Fv1.0.0.json)](https://fylgja.dev/)
+[![CI](https://img.shields.io/github/actions/workflow/status/fylgja/php-fonts-provider/test.yml?color=%230969da&label=&branch=main&logo=github&labelColor=%232b1c2c)](https://github.com/fylgja/php-fonts-provider/actions)
+[![Version](https://img.shields.io/packagist/v/fylgja/fonts-provider?color=%230969da&label=&logo=packagist&logoColor=white&labelColor=%232b1c2c)](https://packagist.org/packages/fylgja/fonts-provider)
+[![PHP](https://img.shields.io/packagist/dependency-v/fylgja/fonts-provider/php?color=%230969da&label=&logo=php&logoColor=white&labelColor=%232b1c2c)](https://packagist.org/packages/fylgja/fonts-provider)
+[![License](https://img.shields.io/github/license/fylgja/php-fonts-provider?color=%23ffb900&labelColor=%232b1c2c)](/LICENSE)
+
 Self host web fonts from Fontsource, Google Fonts, Bunny Fonts and Fontshare in any PHP application.
 It resolves a list of font families, downloads the woff2 files, and renders the `@font-face` rules and CSS variables, including a fallback face with metric overrides so the page does not shift when the font arrives.
 
