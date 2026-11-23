@@ -1,0 +1,28 @@
+{
+	"normalize": [
+		{ "name": "defaults", "fonts": [{ "name": "Inter", "weights": [700, "400"] }, { "name": "Lora", "provider": "google-fonts", "cssVariable": "heading", "styles": ["italic", "normal", "italic"] }] },
+		{ "name": "local", "fonts": [{ "provider": "local", "name": "Brand", "variants": [{ "src": ["brand.woff2"], "weight": "100 900", "stretch": "75% 125%" }] }] },
+		{ "name": "overlap and ranges", "fonts": [{ "name": "Inter", "weights": ["300 700", 400] }, { "name": "Roboto", "provider": "bunny-fonts", "weights": ["100..900"] }, { "name": "Satoshi", "provider": "fontshare", "weights": ["100-900"] }] },
+		{ "name": "wrong types", "fonts": [{ "name": "Inter", "styles": "italic", "weights": [400.5], "preload": "yes", "cssVariable": 5 }, "Inter", {}] },
+		{ "name": "unsafe values", "fonts": [{ "name": "Inter\"; }", "cssVariable": "--a b", "cssSelector": ":root /*", "id": "../x", "display": "maybe", "fallbacks": ["x;}"], "subsets": ["../x"] }] },
+		{ "name": "unknown provider", "fonts": [{ "name": "Inter", "provider": "adobe" }] },
+		{ "name": "duplicate variable", "fonts": [{ "name": "Inter" }, { "name": "Roboto", "cssVariable": "--font-inter" }] },
+		{ "name": "not a list", "fonts": { "name": "Inter" } },
+		{ "name": "local without variants", "fonts": [{ "provider": "local", "name": "Brand" }, { "provider": "local", "name": "Brand", "cssVariable": "--b", "variants": [{ "src": ["brand.exe"] }, { "src": [] }] }] }
+	],
+	"generate": [
+		{ "name": "fontsource static", "fonts": [{ "name": "pacifico", "cssVariable": "--font-heading", "cssSelector": ".page-title", "weights": "400", "preload": true }] },
+		{ "name": "fontsource variable", "fonts": [{ "name": "Inter", "weights": ["100 900"], "styles": ["normal", "italic"], "subsets": ["latin", "latin-ext"], "preload": true }] },
+		{ "name": "google variable", "fonts": [{ "name": "Inter", "provider": "google-fonts", "weights": ["100 900"], "styles": ["normal", "italic"], "subsets": ["latin", "latin-ext"] }] },
+		{ "name": "google without extension", "fonts": [{ "name": "Source Code Pro", "provider": "google-fonts", "weights": [400, 600], "fallbacks": ["monospace"] }] },
+		{ "name": "bunny", "fonts": [{ "name": "Roboto", "provider": "bunny-fonts", "weights": [400, 700], "styles": ["normal", "italic"], "fallbacks": ["Georgia", "serif"] }] },
+		{ "name": "fontshare", "fonts": [{ "name": "Satoshi", "provider": "fontshare", "weights": [400, 700], "styles": ["normal", "italic"] }, { "name": "JetBrains Mono", "provider": "fontshare", "id": "jet-brains-mono", "fallbacks": ["monospace"], "display": "optional" }] },
+		{ "name": "fontshare without the weight", "fonts": [{ "name": "Satoshi", "provider": "fontshare", "weights": [950] }] },
+		{ "name": "unknown families", "fonts": [{ "name": "Not A Real Font" }, { "name": "Not A Real Font", "provider": "google-fonts", "cssVariable": "--a" }, { "name": "Not A Real Font", "provider": "bunny-fonts", "cssVariable": "--b" }] },
+		{ "name": "options", "options": { "urlBase": "https://example.com/media/fonts", "cssSelector": "@theme" }, "fonts": [{ "name": "pacifico", "cssVariable": "--font-heading", "adjustFallback": false }, { "name": "Roboto", "weights": [400, 700], "cssVariable": "font-body", "fallbacks": ["cursive"], "cssSelector": ".prose" }] },
+		{ "name": "offline", "offline": true, "fonts": [{ "name": "pacifico" }] },
+		{ "name": "size limit", "options": { "maxFileSize": 1000 }, "fonts": [{ "name": "pacifico" }] },
+		{ "name": "local", "files": { "brand/brand.ttf": "substitute.ttf", "brand/brand.woff": "substitute.woff" }, "fonts": [{ "provider": "local", "name": "Brand", "preload": true, "variants": [{ "src": ["brand/brand.woff", "brand/brand.ttf"], "weight": "100 900", "unicodeRange": "U+0000-00FF" }] }, { "provider": "local", "name": "Missing", "variants": [{ "src": ["missing.woff2"] }] }] },
+		{ "name": "invalid", "fonts": [{ "name": "Inter", "styles": ["bold"] }] }
+	]
+}

@@ -308,29 +308,44 @@ final readonly class FontsProvider
             return null;
         }
 
-        if ($this->metrics->canRead($bytes)) {
-            return $this->metrics->read($bytes);
-        }
-
-        $provider = $this->provider($font);
-        try {
-            $url = $provider->isRemote() ? $provider->measureUrl($font, $face, $context) : null;
-            if ($url !== null && $provider->allowsDownload($url)) {
-                $response = $context->fetcher()->fetch($url);
-                if ($response->ok() && strlen($response->body) <= $options->maxFileSize) {
-                    $metrics = $this->metrics->read($response->body);
-                    if ($metrics !== null) {
-                        return $metrics;
-                    }
-                }
-            }
-        } catch (\Exception) {
-            // Reported below, like any other way of not finding a file to measure.
+        $metrics = $this->metrics->canRead($bytes)
+            ? $this->metrics->read($bytes)
+            : $this->measureElsewhere($font, $face, $context, $options);
+        if ($metrics !== null) {
+            return $metrics;
         }
 
         $warnings[] = "Could not measure \"{$font->name}\" for its fallback face."
             . ($this->metrics->readsWoff2() ? '' : ' Install ext-brotli to read woff2 files.');
 
         return null;
+    }
+
+    /**
+     * Measures a woff or ttf of the same face, for a woff2 that cannot be
+     * read without Brotli.
+     *
+     * @param Family $font
+     * @param Face $face
+     * @param ResolveContext $context
+     * @param Options $options
+     * @return Metrics|null
+     */
+    private function measureElsewhere(Family $font, Face $face, ResolveContext $context, Options $options): ?Metrics
+    {
+        $provider = $this->provider($font);
+
+        try {
+            $url = $provider->isRemote() ? $provider->measureUrl($font, $face, $context) : null;
+            if ($url === null || !$provider->allowsDownload($url)) {
+                return null;
+            }
+
+            $response = $context->fetcher()->fetch($url);
+
+            return $response->ok() && strlen($response->body) <= $options->maxFileSize ? $this->metrics->read($response->body) : null;
+        } catch (\Exception) {
+            return null;
+        }
     }
 }

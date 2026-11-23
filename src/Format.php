@@ -31,6 +31,6 @@ final class Format
      */
     public static function percent(float $ratio): string
     {
-        return self::number(round($ratio * 100, 2)) . '%';
+        return self::number(round($ratio * 10000) / 100) . '%';
     }
 }

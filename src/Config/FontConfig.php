@@ -77,7 +77,7 @@ final class FontConfig
     private static function normalizeFont(mixed $font, string $label, array &$errors, ProviderRegistry $providers): ?Family
     {
         if (!self::isMap($font)) {
-            $errors[] = "{$label} must be an array of options.";
+            $errors[] = "{$label} must be a set of options.";
             return null;
         }
 
@@ -152,7 +152,7 @@ final class FontConfig
         foreach ($variants as $index => $variant) {
             $variantLabel = "{$label}.variants[{$index}]";
             if (!self::isMap($variant)) {
-                $errors[] = "{$variantLabel} must be an array of options.";
+                $errors[] = "{$variantLabel} must be a set of options.";
                 continue;
             }
 

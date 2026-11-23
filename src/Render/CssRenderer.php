@@ -43,10 +43,10 @@ final class CssRenderer
             'font-family: ' . self::quoteFamily((string) $face->family),
             "font-style: {$face->style}",
             "font-weight: {$face->weight}",
-            $face->stretch ? "font-stretch: {$face->stretch}" : null,
-            $face->display ? "font-display: {$face->display}" : null,
+            ($face->stretch ?? '') !== '' ? "font-stretch: {$face->stretch}" : null,
+            ($face->display ?? '') !== '' ? "font-display: {$face->display}" : null,
             "src: {$src}",
-            $face->unicodeRange ? "unicode-range: {$face->unicodeRange}" : null,
+            ($face->unicodeRange ?? '') !== '' ? "unicode-range: {$face->unicodeRange}" : null,
         ]);
 
         return self::rule($declarations);

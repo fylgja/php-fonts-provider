@@ -6,6 +6,8 @@ It resolves a list of font families, downloads the woff2 files, and renders the 
 Framework neutral: it needs a [PSR-18](https://www.php-fig.org/psr/psr-18/) HTTP client and a folder to store the fonts in, nothing else.
 Where the CSS goes, how the families are configured and when to run it is up to the application.
 
+A [Node version](https://github.com/fylgja/js-fonts-provider) with the same API and output is available as well.
+
 ## Installation
 
 ```sh
@@ -162,6 +164,7 @@ Files are never deleted. The file names only depend on the family, subset, weigh
 ```sh
 composer test                  # PHPUnit, on recorded HTTP responses
 FONTS_RECORD=1 composer test   # record the responses a new test needs
+composer parity                # compare the output with the Node version, see AGENTS.md
 ```
 
 ## License

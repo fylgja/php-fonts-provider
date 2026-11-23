@@ -2,3 +2,4 @@
 /composer.lock
 /.phpunit.cache/
 /tests/_*
+/tests/parity/node_modules/
