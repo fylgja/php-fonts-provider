@@ -21,3 +21,19 @@ jobs:
           coverage: none
       - run: composer install --no-interaction --no-progress
       - run: composer test
+
+  parity:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: "8.5"
+          extensions: intl, zlib, brotli
+          coverage: none
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 24
+      - run: composer install --no-interaction --no-progress
+      - run: npm install --prefix tests/parity --no-audit --no-fund
+      - run: composer parity

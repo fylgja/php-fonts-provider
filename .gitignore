@@ -3,3 +3,4 @@
 /.phpunit.cache/
 /tests/_*
 /tests/parity/node_modules/
+/tests/parity/package-lock.json
