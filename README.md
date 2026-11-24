@@ -128,11 +128,21 @@ A file is only downloaded over https from the hosts its provider serves fonts fr
 Add a provider, or replace one with other hosts, through the `ProviderRegistry`:
 
 ```php
+use Fylgja\FontsProvider\FontsProvider;
+use Fylgja\FontsProvider\Http\Psr18Fetcher;
 use Fylgja\FontsProvider\Provider\Fontsource;
 use Fylgja\FontsProvider\Provider\ProviderRegistry;
+use Fylgja\FontsProvider\Storage\LocalStorage;
+use GuzzleHttp\Client;
+use GuzzleHttp\Psr7\HttpFactory;
 
 $providers = ProviderRegistry::default()->add(new Fontsource(['cdn.jsdelivr.net', 'fonts.example.com']));
-$fonts = new FontsProvider($storage, $fetcher, $providers);
+
+$fonts = new FontsProvider(
+    new LocalStorage('/var/www/public/fonts'),
+    new Psr18Fetcher(new Client(['timeout' => 10]), new HttpFactory()),
+    $providers,
+);
 ```
 
 The server needs outbound https access to the provider APIs (`api.fontsource.org`, `fonts.googleapis.com`, `fonts.bunny.net`, `api.fontshare.com`) and their file hosts.
