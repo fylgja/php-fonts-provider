@@ -23,6 +23,9 @@ final class FontConfigTest extends TestCase
         yield 'css variable' => [['name' => 'Inter', 'cssVariable' => '--font: red;'], 'fonts[0].cssVariable "--font: red;" is not a valid custom property name.'];
         yield 'selector' => [['name' => 'Inter', 'cssSelector' => ':root{}'], 'fonts[0].cssSelector contains characters that are not allowed in a selector.'];
         yield 'comment in selector' => [['name' => 'Inter', 'cssSelector' => ':root /*'], 'fonts[0].cssSelector contains characters that are not allowed in a selector.'];
+        yield 'backslash in selector' => [['name' => 'Inter', 'cssSelector' => '.a\\7b'], 'fonts[0].cssSelector contains characters that are not allowed in a selector.'];
+        yield 'open quote in selector' => [['name' => 'Inter', 'cssSelector' => "[data-font='a\"]"], 'fonts[0].cssSelector has a quote that is not closed.'];
+        yield 'long selector' => [['name' => 'Inter', 'cssSelector' => '.' . str_repeat('a', 200)], 'fonts[0].cssSelector is longer than 200 characters.'];
         yield 'id' => [['name' => 'Inter', 'id' => '../../etc'], 'fonts[0].id "../../etc" may only contain letters, digits, "-" and "_".'];
         yield 'display' => [['name' => 'Inter', 'display' => 'swap;color:red'], 'fonts[0].display must be one of: auto, block, swap, fallback, optional.'];
         yield 'fallback' => [['name' => 'Inter', 'fallbacks' => ['sans-serif', 'x;}']], 'fonts[0].fallbacks has a value that is not a font family name: x;}.'];
@@ -55,6 +58,13 @@ final class FontConfigTest extends TestCase
     public function testRejectsUnsafeValues(array $font, string $error): void
     {
         self::assertSame([$error], FontConfig::normalize([$font])->errors);
+    }
+
+    public function testAcceptsASelectorWithQuotedAttributeValues(): void
+    {
+        $config = FontConfig::normalize([['name' => 'Inter', 'cssSelector' => '[data-font="it\'s"] .' . str_repeat('a', 180)]]);
+
+        self::assertSame([], $config->errors);
     }
 
     public function testAcceptsQuotedAndNamedFallbacks(): void

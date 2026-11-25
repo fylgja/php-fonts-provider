@@ -24,6 +24,8 @@ final class FontConfig
 
     public const DISPLAY_VALUES = ['auto', 'block', 'swap', 'fallback', 'optional'];
 
+    public const MAX_SELECTOR_LENGTH = 200;
+
     /** Completes the message for a weight out of bounds. */
     private const WEIGHT_BOUNDS = 'not a weight from ' . Weight::MIN . ' to ' . Weight::MAX . ', or a range from low to high.';
 
@@ -260,8 +262,14 @@ final class FontConfig
             $errors[] = "{$label}.cssVariable \"{$family->cssVariable}\" is not a valid custom property name.";
         }
 
-        if ($family->cssSelector !== null && preg_match('#[{};<>\x00-\x1f\x7f]|/\*#', $family->cssSelector)) {
-            $errors[] = "{$label}.cssSelector contains characters that are not allowed in a selector.";
+        if ($family->cssSelector !== null) {
+            if (preg_match('#[{};<>\\\\\x00-\x1f\x7f]|/\*#', $family->cssSelector)) {
+                $errors[] = "{$label}.cssSelector contains characters that are not allowed in a selector.";
+            } elseif (self::hasOpenQuote($family->cssSelector)) {
+                $errors[] = "{$label}.cssSelector has a quote that is not closed.";
+            } elseif ((preg_match_all('/./su', $family->cssSelector) ?: strlen($family->cssSelector)) > self::MAX_SELECTOR_LENGTH) {
+                $errors[] = "{$label}.cssSelector is longer than " . self::MAX_SELECTOR_LENGTH . ' characters.';
+            }
         }
 
         if (!preg_match('/^[A-Za-z0-9_-]*$/D', $family->id)) {
@@ -315,6 +323,27 @@ final class FontConfig
         }
 
         return count($errors) === $count;
+    }
+
+    /**
+     * Whether a selector ends inside a quoted string, such as an attribute
+     * value, which would swallow the rest of the stylesheet.
+     *
+     * @param string $selector - without backslashes, so a quote cannot be escaped
+     * @return bool
+     */
+    private static function hasOpenQuote(string $selector): bool
+    {
+        $quote = null;
+        foreach (str_split($selector) as $char) {
+            if ($quote === null && ($char === '"' || $char === "'")) {
+                $quote = $char;
+            } elseif ($char === $quote) {
+                $quote = null;
+            }
+        }
+
+        return $quote !== null;
     }
 
     /**
