@@ -231,6 +231,7 @@ final readonly class FontsProvider
     {
         $records = [];
         $failed = [];
+        $budget = ['files' => 0, 'bytes' => 0];
 
         foreach ($downloads as ['url' => $url, 'file' => $file, 'provider' => $provider]) {
             if (!$options->force && $this->storage->exists($file)) {
@@ -238,7 +239,9 @@ final readonly class FontsProvider
                 continue;
             }
 
-            $error = $this->fetchFile($url, $file, $provider, $options);
+            $error = ++$budget['files'] > $options->maxFiles
+                ? "the run reached its limit of {$options->maxFiles} font files"
+                : $this->fetchFile($url, $file, $provider, $options, $budget['bytes']);
             if ($error !== null) {
                 $failed[$file] = "{$url} ({$error})";
                 $records[] = new Download($url, $file, DownloadStatus::Failed, $error);
@@ -258,9 +261,10 @@ final readonly class FontsProvider
      * @param string $file
      * @param ProviderInterface $provider
      * @param Options $options
+     * @param int $bytes - downloaded so far in this run, counts this file as well
      * @return string|null why it failed, null on success
      */
-    private function fetchFile(string $url, string $file, ProviderInterface $provider, Options $options): ?string
+    private function fetchFile(string $url, string $file, ProviderInterface $provider, Options $options, int &$bytes): ?string
     {
         if (!$provider->allowsDownload($url)) {
             return 'not a host this provider serves fonts from';
@@ -275,6 +279,11 @@ final readonly class FontsProvider
 
             if (strlen($response->body) > $options->maxFileSize) {
                 return "larger than {$options->maxFileSize} bytes";
+            }
+
+            $bytes += strlen($response->body);
+            if ($bytes > $options->maxTotalBytes) {
+                return "the run reached its limit of {$options->maxTotalBytes} bytes";
             }
 
             if (FontFormat::extension($file) === 'woff2' && !str_starts_with($response->body, 'wOF2')) {
