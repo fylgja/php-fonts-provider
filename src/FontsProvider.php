@@ -111,8 +111,11 @@ final readonly class FontsProvider
         $context = new ResolveContext($this->storage, $this->fetcher);
 
         // A variable font serves one file for every weight, so the same URL
-        // must map to a single local file instead of one copy per face.
+        // must map to a single local file instead of one copy per face. Two
+        // URLs mapping to the same name would overwrite each other instead.
         $filesByUrl = [];
+        $urlsByFile = [];
+        $collisions = [];
         $downloads = [];
         $families = [];
         $warnings = [];
@@ -130,8 +133,14 @@ final readonly class FontsProvider
 
                     $url = (string) $face->url;
                     if (!isset($filesByUrl[$url])) {
-                        $filesByUrl[$url] = self::downloadFileName($font, $face);
-                        $downloads[] = ['url' => $url, 'file' => $filesByUrl[$url], 'provider' => $provider];
+                        $file = self::downloadFileName($font, $face);
+                        if (isset($urlsByFile[$file])) {
+                            $collisions[] = "Skipped {$url} for \"{$font->name}\", its file name {$file} is taken by {$urlsByFile[$file]}.";
+                            continue;
+                        }
+                        $filesByUrl[$url] = $file;
+                        $urlsByFile[$file] = $url;
+                        $downloads[] = ['url' => $url, 'file' => $file, 'provider' => $provider];
                     }
                     $faces[] = $face->with(['files' => [$filesByUrl[$url]]]);
                 }
@@ -143,6 +152,8 @@ final readonly class FontsProvider
             $families[] = ['font' => $font, 'faces' => $faces];
         }
 
+        // After the resolve warnings, the order the Node version reports them in.
+        $warnings = [...$warnings, ...$collisions];
         [$records, $failed] = $this->download($downloads, $options);
 
         $resolved = [];
