@@ -16,6 +16,8 @@ use Fylgja\FontsProvider\WarningException;
 
 final class FontsProviderTest extends TestCase
 {
+    private const PACIFICO_FILE = 'https://cdn.jsdelivr.net/fontsource/fonts/pacifico@latest/latin-400-normal.woff2';
+
     private const PACIFICO = [['name' => 'pacifico', 'cssVariable' => '--font-heading', 'cssSelector' => '.page-title', 'weights' => '400']];
 
     private const PACIFICO_FALLBACK = <<<'CSS'
@@ -210,5 +212,26 @@ final class FontsProviderTest extends TestCase
         self::assertSame([], $result->warnings);
         self::assertStringContainsString('url("/fonts/brand/brand.ttf") format("truetype")', $result->css());
         self::assertStringContainsString('size-adjust: 92.43%;', $result->css());
+    }
+
+    public function testRefusesHostsWithAnAddressThatIsNotPublic(): void
+    {
+        $fetcher = new ReplayFetcher(hosts: ['cdn.jsdelivr.net' => ['8.8.8.8', '10.0.0.1']]);
+        $result = $this->provider($fetcher)->generate(self::PACIFICO);
+
+        self::assertSame('cdn.jsdelivr.net resolves to 10.0.0.1, which is not a public address', $result->downloads[0]->error);
+        self::assertNotContains(self::PACIFICO_FILE, $fetcher->requests);
+
+        $allowed = new ReplayFetcher(hosts: ['cdn.jsdelivr.net' => ['10.0.0.1']], allowPrivateAddresses: true);
+        self::assertSame(DownloadStatus::Downloaded, $this->provider($allowed)->generate(self::PACIFICO)->downloads[0]->status);
+    }
+
+    public function testDoesNotFollowRedirects(): void
+    {
+        $fetcher = new ReplayFetcher([self::PACIFICO_FILE => ['status' => 302, 'headers' => ['location' => 'https://evil.example/pacifico.woff2']]]);
+        $result = $this->provider($fetcher)->generate(self::PACIFICO);
+
+        self::assertSame('HTTP 302', $result->downloads[0]->error);
+        self::assertNotContains('https://evil.example/pacifico.woff2', $fetcher->requests);
     }
 }
