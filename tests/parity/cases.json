@@ -8,7 +8,10 @@
 		{ "name": "unknown provider", "fonts": [{ "name": "Inter", "provider": "adobe" }] },
 		{ "name": "duplicate variable", "fonts": [{ "name": "Inter" }, { "name": "Roboto", "cssVariable": "--font-inter" }] },
 		{ "name": "not a list", "fonts": { "name": "Inter" } },
-		{ "name": "local without variants", "fonts": [{ "provider": "local", "name": "Brand" }, { "provider": "local", "name": "Brand", "cssVariable": "--b", "variants": [{ "src": ["brand.exe"] }, { "src": [] }] }] }
+		{ "name": "local without variants", "fonts": [{ "provider": "local", "name": "Brand" }, { "provider": "local", "name": "Brand", "cssVariable": "--b", "variants": [{ "src": ["brand.exe"] }, { "src": [] }] }] },
+		{ "name": "weight bounds", "fonts": [{ "name": "Inter", "weights": ["100 200 300"] }, { "name": "Roboto", "weights": [1001, "0 400"] }, { "name": "Lora", "weights": ["900 100"] }, { "provider": "local", "name": "Brand", "variants": [{ "src": ["brand.woff2"], "weight": "100 2000" }] }, { "name": "Mono", "weights": ["1 1000"] }] },
+		{ "name": "selector rules", "fonts": [{ "name": "A", "cssSelector": ".a\\7b" }, { "name": "B", "cssSelector": "[data-font='b\"]" }, { "name": "C", "cssSelector": ".cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc" }, { "name": "D", "cssSelector": "[data-font=\"it's\"] .page" }] },
+		{ "name": "too many families", "fonts": [{ "name": "Font 0" }, { "name": "Font 1" }, { "name": "Font 2" }, { "name": "Font 3" }, { "name": "Font 4" }, { "name": "Font 5" }, { "name": "Font 6" }, { "name": "Font 7" }, { "name": "Font 8" }, { "name": "Font 9" }, { "name": "Font 10" }, { "name": "Font 11" }, { "name": "Font 12" }, { "name": "Font 13" }, { "name": "Font 14" }, { "name": "Font 15" }, { "name": "Font 16" }, { "name": "Font 17" }, { "name": "Font 18" }, { "name": "Font 19" }, { "name": "Font 20" }, { "name": "Font 21" }, { "name": "Font 22" }, { "name": "Font 23" }, { "name": "Font 24" }, { "name": "Font 25" }, { "name": "Font 26" }, { "name": "Font 27" }, { "name": "Font 28" }, { "name": "Font 29" }, { "name": "Font 30" }, { "name": "Font 31" }, { "name": "Font 32" }, { "name": "Font 33" }, { "name": "Font 34" }, { "name": "Font 35" }, { "name": "Font 36" }, { "name": "Font 37" }, { "name": "Font 38" }, { "name": "Font 39" }, { "name": "Font 40" }, { "name": "Font 41" }, { "name": "Font 42" }, { "name": "Font 43" }, { "name": "Font 44" }, { "name": "Font 45" }, { "name": "Font 46" }, { "name": "Font 47" }, { "name": "Font 48" }, { "name": "Font 49" }, { "name": "Font 50" }] }
 	],
 	"generate": [
 		{ "name": "fontsource static", "fonts": [{ "name": "pacifico", "cssVariable": "--font-heading", "cssSelector": ".page-title", "weights": "400", "preload": true }] },
@@ -23,6 +26,20 @@
 		{ "name": "offline", "offline": true, "fonts": [{ "name": "pacifico" }] },
 		{ "name": "size limit", "options": { "maxFileSize": 1000 }, "fonts": [{ "name": "pacifico" }] },
 		{ "name": "local", "files": { "brand/brand.ttf": "substitute.ttf", "brand/brand.woff": "substitute.woff" }, "fonts": [{ "provider": "local", "name": "Brand", "preload": true, "variants": [{ "src": ["brand/brand.woff", "brand/brand.ttf"], "weight": "100 900", "unicodeRange": "U+0000-00FF" }] }, { "provider": "local", "name": "Missing", "variants": [{ "src": ["missing.woff2"] }] }] },
-		{ "name": "invalid", "fonts": [{ "name": "Inter", "styles": ["bold"] }] }
+		{ "name": "invalid", "fonts": [{ "name": "Inter", "styles": ["bold"] }] },
+		{ "name": "file limit", "options": { "maxFiles": 1 }, "fonts": [{ "name": "Roboto", "weights": [400, 700], "adjustFallback": false }] },
+		{ "name": "byte limit", "options": { "maxTotalBytes": 1000 }, "fonts": [{ "name": "pacifico" }] },
+		{ "name": "private file host", "dns": { "cdn.jsdelivr.net": ["8.8.8.8", "10.0.0.1"] }, "fonts": [{ "name": "pacifico" }] },
+		{ "name": "private api host", "dns": { "api.fontshare.com": ["::ffff:127.0.0.1"], "fonts.googleapis.com": ["169.254.169.254"] }, "fonts": [{ "name": "Satoshi", "provider": "fontshare", "weights": [400, 700], "styles": ["normal", "italic"] }, { "name": "Source Code Pro", "provider": "google-fonts", "weights": [400, 600] }] },
+		{ "name": "allow private addresses", "options": { "allowPrivateAddresses": true }, "dns": { "cdn.jsdelivr.net": ["10.0.0.1"], "api.fontsource.org": ["127.0.0.1"] }, "fonts": [{ "name": "pacifico" }] },
+		{ "name": "redirects", "responses": {
+			"https://cdn.jsdelivr.net/fontsource/fonts/pacifico@latest/latin-400-normal.woff2": { "status": 302, "headers": { "location": "https://evil.example/pacifico.woff2" } },
+			"https://api.fontsource.org/v1/fonts/roboto": { "status": 301, "headers": { "location": "http://169.254.169.254/" } }
+		}, "fonts": [{ "name": "pacifico" }, { "name": "Roboto" }] },
+		{ "name": "retries", "responses": {
+			"https://cdn.jsdelivr.net/fontsource/fonts/pacifico@latest/latin-400-normal.woff2": { "status": 503 },
+			"https://api.fontsource.org/v1/fonts/roboto": { "status": 429 }
+		}, "fonts": [{ "name": "pacifico" }, { "name": "Roboto" }] },
+		{ "name": "file name taken", "fonts": [{ "name": "Roboto", "weights": [400], "adjustFallback": false }, { "name": "Roboto", "provider": "bunny-fonts", "cssVariable": "--b", "weights": [400, 700], "styles": ["normal", "italic"] }] }
 	]
 }
