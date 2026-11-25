@@ -20,14 +20,15 @@ The Node version, [`@fylgja/fonts-provider`](https://github.com/fylgja/js-fonts-
 ## Rules
 
 - **Everything printed is validated.** The families can come from a form, so any value that ends up in CSS, a file name or a URL goes through `FontConfig::isSafe()` (config) or `Faces::isSafe()` (provider responses). Add a check for every new option.
-- **Downloads are checked.** https only, the provider's hosts (`allowsDownload()`), the woff2 signature and `maxFileSize`.
+- **Downloads are checked.** https only, the provider's hosts (`allowsDownload()`), the woff2 signature, `maxFileSize`, `maxFiles` and `maxTotalBytes`.
+- **Requests go to public addresses only.** `Psr18Fetcher` checks the host of every request and does not follow redirects.
 - **No request in `normalize()`.** Validation must work offline, so a form can show errors before anything is fetched.
 - **One family failing never fails the run.** It becomes a warning, unless `strict` is set.
 
 ## Tests
 
 `composer test` runs on recorded HTTP responses in `tests/fixtures/http`, keyed by the SHA-1 of the URL (`tests/Support/Fixtures.php`).
-A test that makes a new request fails with the URL. Run `FONTS_RECORD=1 composer test` to record it from the live API. Fontshare files are replaced by an OFL font (`tests/fixtures/fonts/substitute.*`), since their license does not allow redistributing them.
+`ReplayFetcher` answers through `Psr18Fetcher`, on a fake DNS where every host is public. A test that makes a new request fails with the URL. Run `FONTS_RECORD=1 composer test` to record it from the live API. Fontshare files are replaced by an OFL font (`tests/fixtures/fonts/substitute.*`), since their license does not allow redistributing them.
 Tests that read woff2 need `ext-brotli` and are skipped without it.
 
 ## Parity with the Node version
@@ -40,6 +41,7 @@ Add a case for every new option, provider or message. Where the languages differ
 
 - Measuring without Brotli (`ProviderInterface::measureUrl()`, the woff or ttf fallback) only exists here, since Node always has Brotli. The parity check runs with Brotli.
 - A JSON `{}` and `[]` are the same array in PHP, so an empty options object and an empty list both count as a set of options.
+- The address check, `allowPrivateAddresses` and retries belong to `Psr18Fetcher` here, where Node has them in `generate()`. The parity runner passes `allowPrivateAddresses` to the fetcher.
 
 ## Code style
 
