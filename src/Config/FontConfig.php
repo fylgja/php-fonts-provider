@@ -24,6 +24,9 @@ final class FontConfig
 
     public const DISPLAY_VALUES = ['auto', 'block', 'swap', 'fallback', 'optional'];
 
+    /** Completes the message for a weight out of bounds. */
+    private const WEIGHT_BOUNDS = 'not a weight from ' . Weight::MIN . ' to ' . Weight::MAX . ', or a range from low to high.';
+
     /** Characters that would let a value break out of a CSS string or declaration. */
     private const UNSAFE = '/["\\\\<>{};\x00-\x1f\x7f]/';
 
@@ -278,6 +281,8 @@ final class FontConfig
         foreach ($family->weights as $weight) {
             if (!preg_match('/^\d+(?:\.\.\d+)?$/D', $weight->api)) {
                 $errors[] = "{$label}.weights has \"{$weight->css}\", which is not a number or a range of numbers.";
+            } elseif (!$weight->isInBounds()) {
+                $errors[] = "{$label}.weights has \"{$weight->css}\", which is " . self::WEIGHT_BOUNDS;
             }
         }
 
@@ -291,6 +296,8 @@ final class FontConfig
             $variantLabel = "{$label}.variants[{$index}]";
             if (!preg_match('/^\d+(?: \d+)?$/D', $variant->weight->css)) {
                 $errors[] = "{$variantLabel}.weight \"{$variant->weight->css}\" is not a number or a range of numbers.";
+            } elseif (!$variant->weight->isInBounds()) {
+                $errors[] = "{$variantLabel}.weight \"{$variant->weight->css}\" is " . self::WEIGHT_BOUNDS;
             }
             foreach (['style' => $variant->style, 'stretch' => $variant->stretch, 'unicodeRange' => $variant->unicodeRange] as $key => $value) {
                 if ($value !== null && !preg_match(self::SAFE_VALUE, $value)) {

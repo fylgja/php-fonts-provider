@@ -7,6 +7,8 @@ declare(strict_types=1);
 
 namespace Fylgja\FontsProvider\Tests;
 
+use Fylgja\FontsProvider\Api\Stylesheet;
+use Fylgja\FontsProvider\Face;
 use Fylgja\FontsProvider\ResolvedFamily;
 use Fylgja\FontsProvider\Tests\Support\ReplayFetcher;
 
@@ -84,5 +86,15 @@ final class ProvidersTest extends TestCase
         self::assertStringContainsString("Bunny Fonts returned no woff2 files for \"Not A Real Font\": Please specify a valid font on the 'family' parameter.", $result->warnings[2]);
         self::assertSame('', $result->fontFaceCss());
         self::assertSame(['--font-not-a-real-font', '--a', '--b'], array_keys($result->variables()));
+    }
+
+    public function testDropsFacesWithAWeightCssDoesNotAccept(): void
+    {
+        $css = implode("\n", array_map(
+            static fn (string $weight): string => "/* latin */\n@font-face { font-weight: {$weight}; src: url(https://fonts.gstatic.com/a.woff2) format('woff2'); }",
+            ['400', '100 900', '0', '1001', '100 200 300', 'bold'],
+        ));
+
+        self::assertSame(['400', '100 900'], array_map(static fn (Face $face): string => $face->weight, Stylesheet::parseFontFaces($css)));
     }
 }

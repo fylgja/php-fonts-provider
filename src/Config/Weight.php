@@ -13,6 +13,10 @@ namespace Fylgja\FontsProvider\Config;
  */
 final readonly class Weight
 {
+    /** The lowest and highest weight CSS accepts. */
+    public const MIN = 1;
+    public const MAX = 1000;
+
     /**
      * @param string $api
      * @param string $css
@@ -27,7 +31,8 @@ final readonly class Weight
 
     /**
      * Normalizes a weight. A range like "300 700", "300..700" or "300-700"
-     * describes a variable font axis.
+     * describes a variable font axis. A value with more than two parts is kept
+     * as is, so validation refuses it instead of dropping a part.
      *
      * @param int|string $weight
      * @return self
@@ -37,11 +42,24 @@ final readonly class Weight
         $value = trim((string) $weight);
         $range = preg_split('/\s*(?:\.\.|\s|-)\s*/', $value, -1, PREG_SPLIT_NO_EMPTY) ?: [];
 
-        if (count($range) > 1) {
+        if (count($range) === 2) {
             return new self("{$range[0]}..{$range[1]}", "{$range[0]} {$range[1]}", "{$range[0]}-{$range[1]}");
         }
 
         return new self($value, $value, $value);
+    }
+
+    /**
+     * Whether this weight lies within the weights CSS accepts, with the lowest
+     * weight of a range first.
+     *
+     * @return bool
+     */
+    public function isInBounds(): bool
+    {
+        [$min, $max] = $this->bounds();
+
+        return $min >= self::MIN && $max <= self::MAX && ($min < $max || !$this->isRange());
     }
 
     /**

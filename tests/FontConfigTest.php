@@ -27,6 +27,14 @@ final class FontConfigTest extends TestCase
         yield 'display' => [['name' => 'Inter', 'display' => 'swap;color:red'], 'fonts[0].display must be one of: auto, block, swap, fallback, optional.'];
         yield 'fallback' => [['name' => 'Inter', 'fallbacks' => ['sans-serif', 'x;}']], 'fonts[0].fallbacks has a value that is not a font family name: x;}.'];
         yield 'weight' => [['name' => 'Inter', 'weights' => ['bold']], 'fonts[0].weights has "bold", which is not a number or a range of numbers.'];
+        yield 'three part weight' => [['name' => 'Inter', 'weights' => ['100 200 300']], 'fonts[0].weights has "100 200 300", which is not a number or a range of numbers.'];
+        yield 'weight above 1000' => [['name' => 'Inter', 'weights' => [1001]], 'fonts[0].weights has "1001", which is not a weight from 1 to 1000, or a range from low to high.'];
+        yield 'weight of 0' => [['name' => 'Inter', 'weights' => ['0 400']], 'fonts[0].weights has "0 400", which is not a weight from 1 to 1000, or a range from low to high.'];
+        yield 'descending range' => [['name' => 'Inter', 'weights' => ['900 100']], 'fonts[0].weights has "900 100", which is not a weight from 1 to 1000, or a range from low to high.'];
+        yield 'local weight' => [
+            ['provider' => 'local', 'name' => 'Brand', 'variants' => [['src' => ['a.woff2'], 'weight' => '100 2000']]],
+            'fonts[0].variants[0].weight "100 2000" is not a weight from 1 to 1000, or a range from low to high.',
+        ];
         yield 'subset' => [['name' => 'Inter', 'subsets' => ['../x']], 'fonts[0].subsets has "../x", which is not a valid subset name.'];
         yield 'local path' => [
             ['provider' => 'local', 'name' => 'Brand', 'variants' => [['src' => ['../secret.woff2']]]],

@@ -8,6 +8,7 @@ declare(strict_types=1);
 namespace Fylgja\FontsProvider\Api;
 
 use Fylgja\FontsProvider\Config\FontConfig;
+use Fylgja\FontsProvider\Config\Weight;
 use Fylgja\FontsProvider\Face;
 use Fylgja\FontsProvider\Format;
 
@@ -112,7 +113,8 @@ final class Faces
 
     /**
      * Whether a face only holds values that are safe to print in a stylesheet
-     * and a file name. A face that fails is dropped.
+     * and a file name, with a weight or a range of two weights CSS accepts.
+     * A face that fails is dropped.
      *
      * @param Face $face
      * @return bool
@@ -123,6 +125,16 @@ final class Faces
             if ($value !== null && !preg_match(FontConfig::SAFE_VALUE, $value)) {
                 return false;
             }
+        }
+
+        $weights = preg_split('/\s+/', trim($face->weight)) ?: [];
+        foreach ($weights as $weight) {
+            if (!is_numeric($weight) || (float) $weight < Weight::MIN || (float) $weight > Weight::MAX) {
+                return false;
+            }
+        }
+        if (count($weights) > 2) {
+            return false;
         }
 
         return $face->subset === null || (bool) preg_match('/^[A-Za-z0-9_\-\[\]]+$/D', $face->subset);
