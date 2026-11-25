@@ -76,7 +76,7 @@ final class SupportingClassesTest extends TestCase
             new Response(200, [], str_repeat('x', 100)),
         ]));
         $stack->push(\GuzzleHttp\Middleware::history($history));
-        $fetcher = new Psr18Fetcher(new Client(['handler' => $stack]), new HttpFactory(), 50);
+        $fetcher = new Psr18Fetcher(new Client(['handler' => $stack]), new HttpFactory(), 50, resolve: static fn (): array => ['8.8.8.8']);
 
         $response = $fetcher->fetch('https://example.com/a', ['user-agent' => 'test']);
         self::assertSame(404, $response->status);
@@ -92,5 +92,39 @@ final class SupportingClassesTest extends TestCase
 
         $this->expectExceptionMessage('response larger than 50 bytes');
         $fetcher->fetch('https://example.com/c');
+    }
+
+    public function testPsr18FetcherRefusesAddressesThatAreNotPublic(): void
+    {
+        $sent = 0;
+        $client = new Client(['handler' => static function () use (&$sent) {
+            $sent++;
+            return \GuzzleHttp\Promise\Create::promiseFor(new Response(200, [], 'ok'));
+        }]);
+        $hosts = ['fonts.example' => ['8.8.8.8', '10.0.0.1'], 'gone.example' => []];
+        $fetcher = new Psr18Fetcher($client, new HttpFactory(), resolve: static fn (string $host): array => $hosts[$host] ?? ['8.8.8.8']);
+
+        foreach ([
+            'https://fonts.example/a' => 'fonts.example resolves to 10.0.0.1, which is not a public address',
+            'https://gone.example/a' => 'could not resolve gone.example',
+            'https://169.254.169.254/latest' => '169.254.169.254 is not a public address',
+            'https://0177.0.0.1/' => '0177.0.0.1 is not a public address',
+            'https://2130706433/' => '2130706433 is not a public address',
+            'https://224.0.0.1/' => '224.0.0.1 is not a public address',
+            'https://[::ffff:127.0.0.1]/' => '::ffff:127.0.0.1 is not a public address',
+            'https://[fd00::1]/' => 'fd00::1 is not a public address',
+            'https://[64:ff9b::808:808]/' => '64:ff9b::808:808 is not a public address',
+        ] as $url => $message) {
+            try {
+                $fetcher->fetch($url);
+                self::fail("Expected {$url} to be refused.");
+            } catch (FetchException $exception) {
+                self::assertSame($message, $exception->getMessage());
+            }
+        }
+
+        self::assertSame(0, $sent);
+        self::assertSame('ok', $fetcher->fetch('https://8.8.8.8/a')->body);
+        self::assertSame('ok', (new Psr18Fetcher($client, new HttpFactory(), allowPrivateAddresses: true))->fetch('https://10.0.0.1/a')->body);
     }
 }
