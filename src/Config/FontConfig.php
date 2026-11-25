@@ -26,6 +26,9 @@ final class FontConfig
 
     public const MAX_SELECTOR_LENGTH = 200;
 
+    /** Every family is a request, so a config from a form cannot keep a run busy. */
+    public const MAX_FAMILIES = 50;
+
     /** Completes the message for a weight out of bounds. */
     private const WEIGHT_BOUNDS = 'not a weight from ' . Weight::MIN . ' to ' . Weight::MAX . ', or a range from low to high.';
 
@@ -48,6 +51,10 @@ final class FontConfig
 
         if (!array_is_list($fonts)) {
             return new NormalizedConfig([], ['The fonts must be a list of font families.']);
+        }
+
+        if (count($fonts) > self::MAX_FAMILIES) {
+            return new NormalizedConfig([], [sprintf('The fonts may list at most %d families, received %d.', self::MAX_FAMILIES, count($fonts))]);
         }
 
         $errors = [];
