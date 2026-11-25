@@ -103,15 +103,14 @@ foreach ($cases['generate'] as $case) {
         copy("{$fixtures}/fonts/{$fixture}", "{$storage}/{$file}");
     }
 
-    $provider = new FontsProvider(
-        new LocalStorage($storage),
-        new ReplayFetcher(offline: $case['offline'] ?? false),
-        null,
-        new MetricsReader($brotli),
-    );
+    // Address checks belong to the fetcher here, an option of generate() in Node.
+    $options = $case['options'] ?? [];
+    $fetcher = new ReplayFetcher($case['responses'] ?? [], $case['offline'] ?? false, $case['dns'] ?? [], $options['allowPrivateAddresses'] ?? false);
+    unset($options['allowPrivateAddresses']);
+    $provider = new FontsProvider(new LocalStorage($storage), $fetcher, null, new MetricsReader($brotli));
 
     try {
-        $result = $provider->generate($case['fonts'], new Options(...($case['options'] ?? [])));
+        $result = $provider->generate($case['fonts'], new Options(...$options));
         out('--- css');
         out($result->css());
         out('--- warnings');
