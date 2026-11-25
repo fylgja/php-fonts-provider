@@ -89,10 +89,12 @@ When you keep the CSS of an earlier run, keep it when a run has warnings, so a p
 | `force` | `false` | Download every file again, even when it is present. |
 | `strict` | `false` | Throw a `WarningException` when there are warnings. |
 | `maxFileSize` | `10485760` | A larger font file is refused. |
+| `maxFiles` | `500` | Font files downloaded in one run, the rest fail with a warning. |
+| `maxTotalBytes` | `104857600` | Bytes of the font files downloaded in one run. |
 
 ## Configuration
 
-Each family is an array of options.
+Each family is an array of options, at most 50 per config.
 
 | Key | Default | |
 | --- | --- | --- |
@@ -100,8 +102,8 @@ Each family is an array of options.
 | `provider` | `'fontsource'` | `fontsource`, `google-fonts`, `bunny-fonts`, `fontshare` or `local`. |
 | `id` | slug of `name` | The id in the provider's URLs, for the rare family where it differs (Fontshare spells JetBrains Mono `jet-brains-mono`). |
 | `cssVariable` | `'--font-<slug>'` | The leading `--` is added when missing. Must be unique. |
-| `cssSelector` | `Options::$cssSelector` | Selector to declare the variable in. |
-| `weights` | `['400']` | Single weights, or a range such as `'100 900'` (also `'100..900'` or `'100-900'`) for a variable font. |
+| `cssSelector` | `Options::$cssSelector` | Selector to declare the variable in, at most 200 characters, without backslashes or an unclosed quote. |
+| `weights` | `['400']` | Single weights from 1 to 1000, or a range such as `'100 900'` (also `'100..900'` or `'100-900'`) for a variable font. |
 | `styles` | `['normal']` | `normal` and `italic`. |
 | `subsets` | `['latin']` | Ignored by Fontshare, which serves one file per family. |
 | `fallbacks` | `['sans-serif']` | The rest of the font stack. |
@@ -148,6 +150,44 @@ $fonts = new FontsProvider(
 The server needs outbound https access to the provider APIs (`api.fontsource.org`, `fonts.googleapis.com`, `fonts.bunny.net`, `api.fontshare.com`) and their file hosts.
 Adobe Fonts is not supported, since its license does not allow self hosting the files.
 
+
+## Requests
+
+The families can come from a form and the providers answer with URLs, so `Psr18Fetcher` only requests a host whose addresses are all public.
+A host that is, or resolves to, a private, loopback, link local (such as `169.254.169.254`), CGNAT, multicast, reserved or IPv4 mapped address is refused, and so is the family or file that needed it, with a warning.
+An IP address must be in its canonical spelling, so a host such as `0177.0.0.1` is refused.
+For a font mirror on an internal address, pass `allowPrivateAddresses: true` to the `Psr18Fetcher` constructor.
+
+A failed connection, a 429 or a 5xx response is tried twice more, half a second apart.
+
+Set a timeout on the client, the library does not limit how long a request takes.
+Redirects are not followed, a redirect fails like any other response that is not a 2xx. Guzzle does not follow them through PSR-18, turn it off for other clients, such as `HttpClient::create(['max_redirects' => 0])` for Symfony.
+
+### Pinning the checked addresses
+
+PSR-18 has no way to tell a client which address to connect to, so the client resolves the host again when it connects.
+That leaves a short window in which a changed DNS answer points the request at an address that was never checked.
+With Guzzle on ext-curl, a middleware can check the addresses itself and make curl connect to exactly those, through `CURLOPT_RESOLVE`:
+
+```php
+use GuzzleHttp\Client;
+use GuzzleHttp\HandlerStack;
+use Psr\Http\Message\RequestInterface;
+
+$stack = HandlerStack::create();
+$stack->push(static fn (callable $handler): callable => static function (RequestInterface $request, array $options) use ($handler) {
+    $host = $request->getUri()->getHost();
+    $addresses = gethostbynamel($host) ?: throw new \RuntimeException("could not resolve {$host}");
+    foreach ($addresses as $address) {
+        filter_var($address, FILTER_VALIDATE_IP, FILTER_FLAG_GLOBAL_RANGE) ?: throw new \RuntimeException("{$host} is not public");
+    }
+    $options['curl'][CURLOPT_RESOLVE] = ["{$host}:443:" . implode(',', $addresses)];
+
+    return $handler($request, $options);
+});
+
+$fonts = FontsProvider::create(new Client(['handler' => $stack, 'timeout' => 10]), new HttpFactory(), '/var/www/public/fonts');
+```
 ## Fallback metrics
 
 The fallback face scales a local font (Arial for `sans-serif`, Times New Roman for `serif`, Courier New for `monospace`, or a named one such as Georgia) to the size of the webfont.
