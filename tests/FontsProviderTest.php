@@ -234,4 +234,18 @@ final class FontsProviderTest extends TestCase
         self::assertSame('HTTP 302', $result->downloads[0]->error);
         self::assertNotContains('https://evil.example/pacifico.woff2', $fetcher->requests);
     }
+
+    public function testTriesAFailedRequestTwiceMore(): void
+    {
+        $fetcher = new ReplayFetcher([self::PACIFICO_FILE => ['status' => 503], 'https://api.fontsource.org/v1/fonts/roboto' => ['status' => 404]]);
+        $result = $this->provider($fetcher)->generate([...self::PACIFICO, ['name' => 'Roboto']]);
+
+        self::assertSame('HTTP 503', $result->downloads[0]->error);
+        self::assertCount(3, array_keys($fetcher->requests, self::PACIFICO_FILE, true));
+        self::assertCount(1, array_keys($fetcher->requests, 'https://api.fontsource.org/v1/fonts/roboto', true));
+
+        $offline = new ReplayFetcher(offline: true);
+        $this->provider($offline)->generate(self::PACIFICO);
+        self::assertCount(3, $offline->requests);
+    }
 }
