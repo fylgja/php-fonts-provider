@@ -21,12 +21,12 @@ use Psr\Http\Message\RequestInterface;
 
 /**
  * Answers from the recorded fixtures, so tests never touch the network. It
- * runs through `Psr18Fetcher`, so the address check is tested
+ * runs through `Psr18Fetcher`, so the address check and retries are tested
  * too, on a fake DNS where every host is public unless listed.
  */
 final class ReplayFetcher implements Fetcher
 {
-    /** @var list<string> every request sent */
+    /** @var list<string> every request sent, retries included */
     public array $requests = [];
 
     private Psr18Fetcher $fetcher;
@@ -51,6 +51,7 @@ final class ReplayFetcher implements Fetcher
             new HttpFactory(),
             allowPrivateAddresses: $allowPrivateAddresses,
             resolve: static fn (string $host): array => $hosts[$host] ?? ['8.8.8.8'],
+            retryDelay: 0,
         );
     }
 

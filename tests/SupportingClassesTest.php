@@ -72,11 +72,14 @@ final class SupportingClassesTest extends TestCase
         $history = [];
         $stack = HandlerStack::create(new MockHandler([
             new Response(404, [], 'missing'),
-            new ConnectException('Could not resolve host', new Request('GET', 'https://example.com/')),
+            ...array_fill(0, 3, new ConnectException('Could not resolve host', new Request('GET', 'https://example.com/'))),
+            new Response(503),
+            new Response(429),
+            new Response(200, [], 'ok'),
             new Response(200, [], str_repeat('x', 100)),
         ]));
         $stack->push(\GuzzleHttp\Middleware::history($history));
-        $fetcher = new Psr18Fetcher(new Client(['handler' => $stack]), new HttpFactory(), 50, resolve: static fn (): array => ['8.8.8.8']);
+        $fetcher = new Psr18Fetcher(new Client(['handler' => $stack]), new HttpFactory(), 50, resolve: static fn (): array => ['8.8.8.8'], retryDelay: 0);
 
         $response = $fetcher->fetch('https://example.com/a', ['user-agent' => 'test']);
         self::assertSame(404, $response->status);
@@ -90,8 +93,11 @@ final class SupportingClassesTest extends TestCase
             self::assertSame('Could not resolve host', $exception->getMessage());
         }
 
+        self::assertSame('ok', $fetcher->fetch('https://example.com/c')->body);
+        self::assertCount(7, $history);
+
         $this->expectExceptionMessage('response larger than 50 bytes');
-        $fetcher->fetch('https://example.com/c');
+        $fetcher->fetch('https://example.com/d');
     }
 
     public function testPsr18FetcherRefusesAddressesThatAreNotPublic(): void

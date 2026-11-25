@@ -25,6 +25,7 @@ final readonly class Psr18Fetcher implements Fetcher
      * @param int $maxBytes - a larger body is refused rather than read into memory
      * @param bool $allowPrivateAddresses - also request hosts with private, loopback and other non public addresses
      * @param (\Closure(string): list<string>)|null $resolve - the addresses of a host, defaults to the system resolver
+     * @param int $retryDelay - milliseconds before trying a request again
      */
     public function __construct(
         private ClientInterface $client,
@@ -32,6 +33,7 @@ final readonly class Psr18Fetcher implements Fetcher
         private int $maxBytes = 20 * 1024 * 1024,
         private bool $allowPrivateAddresses = false,
         ?\Closure $resolve = null,
+        private int $retryDelay = 500,
     ) {
         $this->resolve = $resolve ?? static fn (string $host): array => [
             ...(gethostbynamel($host) ?: []),
@@ -40,6 +42,9 @@ final readonly class Psr18Fetcher implements Fetcher
     }
 
     /**
+     * Requests a URL, trying again twice after a failed connection or a 429
+     * or 5xx response.
+     *
      * @param string $url
      * @param array<string, string> $headers
      * @return Response
@@ -56,10 +61,19 @@ final readonly class Psr18Fetcher implements Fetcher
             $request = $request->withHeader($name, $value);
         }
 
-        try {
-            $response = $this->client->sendRequest($request);
-        } catch (ClientExceptionInterface $exception) {
-            throw new FetchException($exception->getMessage(), 0, $exception);
+        for ($attempt = 1;; $attempt++) {
+            try {
+                $response = $this->client->sendRequest($request);
+                $status = $response->getStatusCode();
+                if ($attempt >= 3 || ($status !== 429 && $status < 500)) {
+                    break;
+                }
+            } catch (ClientExceptionInterface $exception) {
+                if ($attempt >= 3) {
+                    throw new FetchException($exception->getMessage(), 0, $exception);
+                }
+            }
+            usleep($this->retryDelay * 1000);
         }
 
         $stream = $response->getBody();
@@ -71,7 +85,7 @@ final readonly class Psr18Fetcher implements Fetcher
             }
         }
 
-        return new Response($response->getStatusCode(), $body);
+        return new Response($status, $body);
     }
 
     /**
