@@ -264,4 +264,19 @@ final class FontsProviderTest extends TestCase
         self::assertSame('the run reached its limit of 1000 bytes', $result->downloads[0]->error);
         self::assertFalse($this->storage->exists('pacifico-latin-400-normal.woff2'));
     }
+
+    public function testAFileNameTwoUrlsMapToIsOnlyUsedByTheFirst(): void
+    {
+        $result = $this->provider(new ReplayFetcher())->generate([
+            ['name' => 'Roboto', 'weights' => [400]],
+            ['name' => 'Roboto', 'provider' => 'bunny-fonts', 'cssVariable' => '--b', 'weights' => [400, 700], 'styles' => ['normal', 'italic'], 'adjustFallback' => false],
+        ]);
+
+        self::assertSame(
+            'Skipped https://fonts.bunny.net/roboto/files/roboto-latin-400-normal.woff2 for "Roboto", its file name roboto-latin-400-normal.woff2 is taken by https://cdn.jsdelivr.net/fontsource/fonts/roboto@latest/latin-400-normal.woff2.',
+            $result->warnings[0],
+        );
+        self::assertCount(3, $result->families[1]->faces);
+        self::assertCount(4, $result->downloads);
+    }
 }
