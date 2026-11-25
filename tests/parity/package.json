@@ -2,6 +2,6 @@
 	"private": true,
 	"type": "module",
 	"dependencies": {
-		"@fylgja/fonts-provider": "^1.0.0"
+		"@fylgja/fonts-provider": "^1.1.0"
 	}
 }
