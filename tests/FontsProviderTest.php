@@ -248,4 +248,20 @@ final class FontsProviderTest extends TestCase
         $this->provider($offline)->generate(self::PACIFICO);
         self::assertCount(3, $offline->requests);
     }
+
+    public function testFilesOverTheLimitAreNotDownloaded(): void
+    {
+        $result = $this->provider(new ReplayFetcher())->generate([['name' => 'Roboto', 'weights' => [400, 700]]], new Options(maxFiles: 1));
+
+        self::assertSame([null, 'the run reached its limit of 1 font files'], array_map(static fn ($download) => $download->error, $result->downloads));
+        self::assertStringStartsWith('Could not download 1 font file(s) for "Roboto".', $result->warnings[0]);
+    }
+
+    public function testBytesOverTheLimitAreNotStored(): void
+    {
+        $result = $this->provider(new ReplayFetcher())->generate(self::PACIFICO, new Options(maxTotalBytes: 1000));
+
+        self::assertSame('the run reached its limit of 1000 bytes', $result->downloads[0]->error);
+        self::assertFalse($this->storage->exists('pacifico-latin-400-normal.woff2'));
+    }
 }
