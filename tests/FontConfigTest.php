@@ -96,4 +96,12 @@ final class FontConfigTest extends TestCase
         self::assertSame(['latin'], $family->subsets);
         self::assertSame(['sans-serif'], $family->fallbacks);
     }
+
+    public function testRefusesMoreThan50Families(): void
+    {
+        $fonts = array_map(static fn (int $index): array => ['name' => "Font {$index}"], range(0, 50));
+
+        self::assertSame(['The fonts may list at most 50 families, received 51.'], FontConfig::normalize($fonts)->errors);
+        self::assertSame([], FontConfig::normalize(array_slice($fonts, 0, 50))->errors);
+    }
 }
